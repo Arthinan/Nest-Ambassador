@@ -7,11 +7,15 @@ import { User } from './user';
 export class UserService {
 
     constructor(
-        @InjectRepository(User) private readonly userRepositoryL:Repository<User>
+        @InjectRepository(User) private readonly userRepository:Repository<User>
     ){}
 
-    async save(option){
-        return this.userRepositoryL.save(option);
+    async register(options){
+        return this.userRepository.save(options);
+    }
+
+    async login(options){
+        return this.userRepository.findOne(options);
     }
 
 }
