@@ -6,3 +6,21 @@ services:
       - 8000:3000
     volumes:
       - .:/app
+    depends_on:
+      - mariadb
+
+    mariadb:
+      image: mariadb:10
+      restart: always
+      hostname: mariadb
+      volumes:
+        - ./mariadb:/var/lib/mysql
+        # - ./schema:/docker-entrypoint-initdb.d
+      ports:
+        - 3306:3306
+      environment:
+        - TZ=Asia/Bangkok
+        - MYSQL_DATABASE: ambassador
+        - MYSQL_USER: root
+        - MYSQL_PASSWORD: 1234
+        - MYSQL_ROOT_PASSWORD: 1234
