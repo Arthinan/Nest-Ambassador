@@ -1,9 +1,10 @@
-import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, Req, Res, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { Response, Request } from 'express';
+import { AuthGuard } from './auth.guard';
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
@@ -52,18 +53,26 @@ export class AuthController {
 
         response.cookie('jwt',jwt,{httpOnly:true});
         return {
-            message: 'success'
+            message: 'Login success'
         };
     }
 
+    @UseGuards(AuthGuard)
     @Get('admin/user')
     async user(@Req() request:Request){
         const cookie = request.cookies['jwt'];
 
-        //Authen
         const { id } = await this.jwtService.verifyAsync(cookie);
         const user = await this.userService.login({id});
 
         return user;
+    }
+
+    @Post('admin/logout')
+    async logout(@Res({passthrough:true}) response:Response){
+        response.clearCookie('jwt');
+        return{
+            message:'Logout success'
+        }
     }
 }
