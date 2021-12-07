@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, Put, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
@@ -38,7 +38,7 @@ export class AuthController {
         @Res({passthrough: true}) response: Response
 
         ){
-        const user = await this.userService.login({email});
+        const user = await this.userService.findOne({email});
         if (!user) {
             throw new NotFoundException("User not found");
         }
@@ -61,13 +61,13 @@ export class AuthController {
     @Get('admin/user')
     async user(@Req() request:Request){
         const cookie = request.cookies['jwt'];
-
         const { id } = await this.jwtService.verifyAsync(cookie);
-        const user = await this.userService.login({id});
+        const user = await this.userService.findOne({id});
 
         return user;
     }
 
+    @UseGuards(AuthGuard)
     @Post('admin/logout')
     async logout(@Res({passthrough:true}) response:Response){
         response.clearCookie('jwt');
@@ -75,4 +75,46 @@ export class AuthController {
             message:'Logout success'
         }
     }
+
+    @UseGuards(AuthGuard)
+    @Put('admin/user/info')
+    async updateInfo(
+        @Req() request:Request,
+        @Body('first_name') first_name:string,
+        @Body('last_name') last_name:string,
+        @Body('email') email:string,
+    ){
+        const cookie = request.cookies['jwt'];
+
+        const { id } = await this.jwtService.verifyAsync(cookie);
+
+        await this.userService.update(id,{
+            first_name,
+            last_name,
+            email
+        })
+        return this.userService.findOne({id});
+    }
+
+    @UseGuards(AuthGuard)
+    @Put('admin/user/password')
+    async updatePassword(
+        @Req() request:Request,
+        @Body('password') password:string,
+        @Body('password_confirm') password_confirm:string,
+    ){
+        if (password !== password_confirm) {
+            throw new BadRequestException("Passwords do not match");
+        }
+
+        const cookie = request.cookies['jwt'];
+
+        const { id } = await this.jwtService.verifyAsync(cookie);
+
+        await this.userService.update(id,{
+            password: await bcrypt.hash(password,12)
+        });
+        return this.userService.findOne({id});
+    }
+
 }
