@@ -10,8 +10,12 @@ export class UserService {
         @InjectRepository(User) private readonly userRepository:Repository<User>
     ){}
 
-    async register(options){
+    async save(options){
         return this.userRepository.save(options);
+    }
+
+    async find(options){
+        return this.userRepository.find(options);
     }
 
     async findOne(options){

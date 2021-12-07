@@ -24,7 +24,7 @@ export class AuthController {
 
         const hashed =  await bcrypt.hash(body.password, 12);
 
-        return this.userService.register({
+        return this.userService.save({
             ...data,
             password:hashed,
             is_ambassador: false

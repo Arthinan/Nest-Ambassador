@@ -18,7 +18,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed:ambassadors":"ts-node src/commands/ambassador.seeder.ts"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",
@@ -28,11 +29,13 @@
     "@nestjs/typeorm": "^8.0.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/cookie-parser": "^1.4.2",
+    "@types/faker": "^5.5.9",
     "@types/mysql": "^2.15.19",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "cookie-parser": "^1.4.6",
+    "faker": "^5.5.3",
     "mariadb": "^2.5.5",
     "mysql": "^2.18.1",
     "passport-jwt": "^4.0.0",
