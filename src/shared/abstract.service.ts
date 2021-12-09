@@ -1,5 +1,3 @@
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "src/user/user";
 import { Repository } from "typeorm";
 
 export abstract class AbstractService {
@@ -21,5 +19,9 @@ export abstract class AbstractService {
 
     async update(id:number, options){
         return this.repository.update(id, options);
+    }
+
+    async delete(id:number){
+        return this.repository.delete(id);
     }
 }
