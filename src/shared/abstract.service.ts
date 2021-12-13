@@ -9,7 +9,7 @@ export abstract class AbstractService {
         return this.repository.save(options);
     }
 
-    async find(options){
+    async find(options = {}){
         return this.repository.find(options);
     }
 
