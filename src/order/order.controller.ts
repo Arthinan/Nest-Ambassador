@@ -1,6 +1,7 @@
-import { ClassSerializerInterceptor, Controller, Get, Post, UseInterceptors } from '@nestjs/common';
+import { ClassSerializerInterceptor, Controller, Get, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { randomInt } from 'crypto';
 import * as faker from 'faker';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { OrderItemService } from './order-item.service';
 import { OrderService } from './order.service';
 
@@ -11,6 +12,7 @@ export class OrderController {
         private orderItemService:OrderItemService
     ){}
 
+    @UseGuards(AuthGuard)
     @UseInterceptors(ClassSerializerInterceptor)
     @Get('admin/orders')
     all(){
@@ -19,6 +21,7 @@ export class OrderController {
         });
     }
 
+    @UseGuards(AuthGuard)
     @Post('admin/seed/orders')
     async seedOrders(){
         for (let i = 0; i < 30; i++) { //loop fake data save to database

@@ -1,7 +1,8 @@
-import { Controller, Get, Post, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
+import { Controller, Get, Post, UseInterceptors, ClassSerializerInterceptor, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcryptjs';
 import * as faker from 'faker';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
@@ -9,6 +10,7 @@ export class UserController {
 
     constructor(private readonly userService:UserService){}
 
+    @UseGuards(AuthGuard)
     @Get('admin/ambassadors')
     ambassadors(){
         return this.userService.find({
@@ -16,6 +18,7 @@ export class UserController {
         });
     }
 
+    @UseGuards(AuthGuard)
     @Post('admin/seed/ambassadors')
     async seedAmbassador(){
         const password = await bcrypt.hash("1234",12);
