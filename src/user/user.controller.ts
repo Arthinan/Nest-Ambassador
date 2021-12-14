@@ -1,9 +1,10 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
 import { UserService } from './user.service';
 import * as bcrypt from 'bcryptjs';
 import * as faker from 'faker';
 
 @Controller()
+@UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
 
     constructor(private readonly userService:UserService){}

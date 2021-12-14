@@ -1,3 +1,4 @@
+import { Exclude, Expose } from "class-transformer";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { OrderItem } from './order-item';
 
@@ -19,9 +20,11 @@ export class Order {
     @Column()
     ambassador_email:string;
 
+    @Exclude()
     @Column()
     first_name:string;
 
+    @Exclude()
     @Column()
     last_name:string;
 
@@ -40,9 +43,20 @@ export class Order {
     @Column({nullable:true})
     zip:string;
 
+    @Exclude()
     @Column({default:false})
     complete:boolean;
 
     @OneToMany(()=> OrderItem, orderItem => orderItem.order)
     order_items:OrderItem[];
+
+    @Expose()
+    get name(){
+        return `${this.first_name} ${this.last_name}`;
+    }
+
+    @Expose()
+    get total(){
+        return this.order_items.reduce((sum,item) => sum + item.admin_revenue, 0);
+    }
 }
