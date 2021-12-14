@@ -10,7 +10,8 @@ export class LinkController {
     @Get('admin/users/:id/links')
     async all(@Param('id') id:number){
         return this.linkService.find({
-            user:id
+            user:id,
+            relations:['orders']
         });
     }
 }
