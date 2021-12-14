@@ -1,4 +1,4 @@
-import { Body, CacheInterceptor, CacheKey, CacheTTL, CACHE_MANAGER, ClassSerializerInterceptor, Controller, Delete, Get, Inject, Param, Post, Put, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, CacheInterceptor, CacheKey, CacheTTL, CACHE_MANAGER, ClassSerializerInterceptor, Controller, Delete, Get, Inject, Param, Post, Put, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ProductCreateDto } from './dtos/product-create.dto';
 import { ProductService } from './product.service';
 import * as bcrypt from 'bcryptjs';
@@ -7,6 +7,8 @@ import { randomInt } from 'crypto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Cache } from 'cache-manager';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Request } from 'express';
+import { Product } from './product';
 
 @Controller()
 export class ProductController {
@@ -78,13 +80,18 @@ export class ProductController {
     }
 
     @Get('ambassador/products/backend')
-    async backend(){
-        let products = await this.cacheManager.get('products_backend');
+    async backend(@Req() request:Request){
+        let products = await this.cacheManager.get<Product[]>('products_backend');
 
         if (!products) {
             products = await this.productService.find();
 
             await this.cacheManager.set('products_backend', products, {ttl: 1800})
+        }
+
+        if (request.query.search) {
+            const search = request.query.search.toString().toLowerCase();
+            products = products.filter(product => product.title.toLowerCase().indexOf(search) >= 0 || product.description.toLowerCase().indexOf(search) >= 0);
         }
 
         return products;
