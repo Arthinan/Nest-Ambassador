@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, Put, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, Put, Req, Res, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcryptjs';
@@ -35,7 +35,8 @@ export class AuthController {
     async login(
         @Body('email') email: string,
         @Body('password') password: string,
-        @Res({passthrough: true}) response: Response
+        @Res({passthrough: true}) response: Response,
+        @Req() request: Request
 
         ){
         const user = await this.userService.findOne({email});
@@ -47,8 +48,15 @@ export class AuthController {
             throw new BadRequestException("Invalid credential");
         }
 
+        const admin_login = request.path === '/api/admin/login';
+
+        if (user.is_ambassador && admin_login) {
+            throw new UnauthorizedException();
+        }
+
         const jwt = await this.jwtService.signAsync({
-            id: user.id
+            id: user.id,
+            scope: admin_login ? 'admin' : 'ambassador'
         });
 
         response.cookie('jwt',jwt,{httpOnly:true});
