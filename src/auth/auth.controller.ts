@@ -14,8 +14,8 @@ export class AuthController {
         private jwtService:JwtService
         ){}
 
-    @Post('admin/register')
-    async register(@Body() body:RegisterDto){
+    @Post(['admin/register', 'ambassador/register'])
+    async register(@Body() body:RegisterDto, @Req() request:Request){
         const { password_confirm, ...data } = body;  //เอา password_confirm ออกจาก data
 
         if (body.password !== password_confirm) {
@@ -27,11 +27,11 @@ export class AuthController {
         return this.userService.save({
             ...data,
             password:hashed,
-            is_ambassador: false
+            is_ambassador: request.path === '/api/ambassador/register'
         });
     }
 
-    @Post('admin/login')
+    @Post(['admin/login', 'ambassador/login'])
     async login(
         @Body('email') email: string,
         @Body('password') password: string,
@@ -58,7 +58,7 @@ export class AuthController {
     }
 
     @UseGuards(AuthGuard)
-    @Get('admin/user')
+    @Get(['admin/user', 'ambassador/user'])
     async user(@Req() request:Request){
         const cookie = request.cookies['jwt'];
         const { id } = await this.jwtService.verifyAsync(cookie);
@@ -68,7 +68,7 @@ export class AuthController {
     }
 
     @UseGuards(AuthGuard)
-    @Post('admin/logout')
+    @Post(['admin/logout', 'ambassador/logout'])
     async logout(@Res({passthrough:true}) response:Response){
         response.clearCookie('jwt');
         return{
@@ -77,7 +77,7 @@ export class AuthController {
     }
 
     @UseGuards(AuthGuard)
-    @Put('admin/user/info')
+    @Put(['admin/user/info', 'ambassador/user/info'])
     async updateInfo(
         @Req() request:Request,
         @Body('first_name') first_name:string,
@@ -97,7 +97,7 @@ export class AuthController {
     }
 
     @UseGuards(AuthGuard)
-    @Put('admin/user/password')
+    @Put(['admin/user/password','ambassador/user/password'])
     async updatePassword(
         @Req() request:Request,
         @Body('password') password:string,
