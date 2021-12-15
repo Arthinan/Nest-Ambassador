@@ -4,13 +4,13 @@ import * as bcrypt from 'bcryptjs';
 import * as faker from 'faker';
 import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
 
     constructor(private readonly userService:UserService){}
 
-    @UseGuards(AuthGuard)
     @Get('admin/ambassadors')
     ambassadors(){
         return this.userService.find({
@@ -18,7 +18,6 @@ export class UserController {
         });
     }
 
-    @UseGuards(AuthGuard)
     @Post('admin/seed/ambassadors')
     async seedAmbassador(){
         const password = await bcrypt.hash("1234",12);
@@ -33,5 +32,20 @@ export class UserController {
             });
         }
         return { message: 'Seed Success'};
+    }
+
+    @Get('ambassador/rankings')
+    async rankings(){
+        const ambassador = this.userService.find({
+            is_ambassador:true,
+            relations:['orders', 'orders.order_items']
+        });
+
+        return (await ambassador).map(ambassador => {
+            return {
+                name: ambassador.name,
+                revenue: ambassador.revenue
+            }
+        })
     }
 }
