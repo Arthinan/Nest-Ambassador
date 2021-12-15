@@ -46,8 +46,19 @@ export class UserController {
         const client = this.redisService.getClient();
 
         client.zrevrangebyscore('rankings', '+inf', '-inf', 'WITHSCORES', (err, result) => {
+            let score;
 
-            response.send(result)
+            response.send(result.reduce((o, r) => {
+                if (isNaN(parseInt(r))) {
+                    return {
+                        ...o,
+                        [r]: score
+                    }
+                } else {
+                    score = parseInt(r);
+                    return o;
+                }
+            }, {}));
         });
 
         // const ambassador = this.userService.find({
@@ -65,15 +76,15 @@ export class UserController {
 
     @Post('ambassador/commandRankings')
     async commandRankings(){
-        const ambassador: User[] = await this.userService.find({
+        const ambassadors: User[] = await this.userService.find({
             is_ambassador:true,
             relations:['orders', 'orders.order_items']
         });
 
         const client = this.redisService.getClient();
 
-        for (let i = 0; i < this.ambassadors.length; i++) {
-            await client.zadd('rankings', this.ambassadors[i].revenue, this.ambassadors[i].name);
+        for (let i = 0; i < ambassadors.length; i++) {
+            await client.zadd('rankings', ambassadors[i].revenue, ambassadors[i].name);
         }
         return { message: 'CommandRankings Success'};
     }
