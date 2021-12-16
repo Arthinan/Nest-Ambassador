@@ -1,11 +1,13 @@
 import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { randomInt } from 'crypto';
 import * as faker from 'faker';
+import { InjectStripe } from 'nestjs-stripe';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Link } from 'src/link/link';
 import { LinkService } from 'src/link/link.service';
 import { Product } from 'src/product/product';
 import { ProductService } from 'src/product/product.service';
+import Stripe from 'stripe';
 import { Connection } from 'typeorm';
 import { CreateOrderDto } from './dtos/create-order.dto';
 import { Order } from './order';
@@ -20,7 +22,8 @@ export class OrderController {
         private orderItemService:OrderItemService,
         private linkService:LinkService,
         private productService:ProductService,
-        private connection: Connection
+        private connection: Connection,
+        @InjectStripe() private readonly stripeClient: Stripe,
     ){}
 
     @UseGuards(AuthGuard)
@@ -91,11 +94,13 @@ export class OrderController {
 
             const saveOrder = await queryRunner.manager.save(order);
 
+            const line_items = [];
+
             for (let p of body.products){
                 const product:Product = await this.productService.findOne({id: p.product_id});
 
                 const orderItem = new OrderItem();
-                orderItem.order = order;
+                orderItem.order = saveOrder;
                 orderItem.product_title = product.title;
                 orderItem.price = product.price;
                 orderItem.quantity = p.quantity;
@@ -103,15 +108,36 @@ export class OrderController {
                 orderItem.admin_revenue = 0.9 * product.price * p.quantity;
 
                 await queryRunner.manager.save(orderItem);
+
+                line_items.push({
+                    name: product.title,
+                    description: product.description,
+                    images: [
+                        product.image
+                    ],
+                    amount: 100 * product.price,
+                    currency: 'usd',
+                    quantity: p.quantity
+                })
             }
 
+            const source = await this.stripeClient.checkout.sessions.create({
+                payment_method_types:['card'],
+                line_items,
+                success_url:'http://localhost:5000/success?source={CHECKOUT_SESSION_ID}',
+                cancel_url:'http://localhost:5000/error'
+            });
+
+            saveOrder.transaction_id = source['id'];
+            await queryRunner.manager.save(saveOrder);
+
             await queryRunner.commitTransaction();
-            return saveOrder;
+            return source;
 
         } catch (error) {
             await queryRunner.rollbackTransaction();
 
-            throw new BadRequestException();
+            throw new BadRequestException(error);
         } finally {
             await queryRunner.release();
         }

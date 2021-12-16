@@ -33,6 +33,7 @@
     "@types/cookie-parser": "^1.4.2",
     "@types/faker": "^5.5.9",
     "@types/mysql": "^2.15.19",
+    "@types/stripe": "^8.0.417",
     "bcryptjs": "^2.4.3",
     "cache-manager": "^3.6.0",
     "cache-manager-redis-store": "^2.0.0",
@@ -42,11 +43,13 @@
     "faker": "^5.5.3",
     "mariadb": "^2.5.5",
     "mysql": "^2.18.1",
+    "nestjs-stripe": "^1.0.0",
     "passport-jwt": "^4.0.0",
     "redis": "^3.1.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
+    "stripe": "^8.194.0",
     "typeorm": "^0.2.41"
   },
   "devDependencies": {
