@@ -22,7 +22,7 @@ export class OrderItem{
     @Column()
     ambassador_revenue:number;
 
-    @ManyToOne(()=>Order, order => order.order_items)
+    @ManyToOne(() => Order, order => order.order_items)
     @JoinColumn({name:'order_id'})
     order:Order;
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomInt } from 'crypto';
 import * as faker from 'faker';
@@ -15,6 +15,7 @@ import { Order } from './order';
 import { OrderItem } from './order-item';
 import { OrderItemService } from './order-item.service';
 import { OrderService } from './order.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Controller()
 export class OrderController {
@@ -26,6 +27,7 @@ export class OrderController {
         private connection: Connection,
         @InjectStripe() private readonly stripeClient: Stripe,
         private configService:ConfigService,
+        private eventEmitter: EventEmitter2,
     ){}
 
     @UseGuards(AuthGuard)
@@ -69,7 +71,7 @@ export class OrderController {
     async create(@Body() body:CreateOrderDto){
         const link: Link = await this.linkService.findOne({
             code: body.code,
-            relations:['user']
+            relations: ['user']
         });
 
         if (!link) {
@@ -143,6 +145,21 @@ export class OrderController {
         } finally {
             await queryRunner.release();
         }
+    }
 
+    @Post('checkout/orders/confirm')
+    async confirm(@Body('source') source: string) {
+        const order = await this.orderService.findOne({
+            where:{transaction_id:source},
+            relation:['user', 'order_items']
+        });
+
+        if (!order) {
+            throw new NotFoundException('Order not found');
+        }
+
+        await this.orderService.update(order.id, {complete: true});
+        await this.eventEmitter.emit('order.completed', order);
+        return { message: 'Success'}
     }
 }
