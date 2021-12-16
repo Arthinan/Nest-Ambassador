@@ -1,4 +1,5 @@
 import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Get, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { randomInt } from 'crypto';
 import * as faker from 'faker';
 import { InjectStripe } from 'nestjs-stripe';
@@ -24,6 +25,7 @@ export class OrderController {
         private productService:ProductService,
         private connection: Connection,
         @InjectStripe() private readonly stripeClient: Stripe,
+        private configService:ConfigService,
     ){}
 
     @UseGuards(AuthGuard)
@@ -124,8 +126,8 @@ export class OrderController {
             const source = await this.stripeClient.checkout.sessions.create({
                 payment_method_types:['card'],
                 line_items,
-                success_url:'http://localhost:5000/success?source={CHECKOUT_SESSION_ID}',
-                cancel_url:'http://localhost:5000/error'
+                success_url:`${this.configService.get('CHECKOUT_URL')}/success?source={CHECKOUT_SESSION_ID}`,
+                cancel_url:`${this.configService.get('CHECKOUT_URL')}/error`
             });
 
             saveOrder.transaction_id = source['id'];

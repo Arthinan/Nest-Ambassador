@@ -9,6 +9,7 @@ import { OrderModule } from './order/order.module';
 import { LinkModule } from './link/link.module';
 import { SharedModule } from './shared/shared.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -21,6 +22,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       database: 'ambassador',
       autoLoadEntities: true,
       synchronize: true,
+    }),
+    ConfigModule.forRoot({
+      isGlobal:true
     }),
     EventEmitterModule.forRoot(),
     UserModule,
