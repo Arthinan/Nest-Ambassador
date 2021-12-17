@@ -23,6 +23,7 @@
     "rankings": "ts-node src/commands/rankings.ts"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^1.6.0",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.1.5",
     "@nestjs/core": "^8.0.0",
@@ -42,9 +43,11 @@
     "class-validator": "^0.13.2",
     "cookie-parser": "^1.4.6",
     "faker": "^5.5.3",
+    "mailhog": "^4.16.0",
     "mariadb": "^2.5.5",
     "mysql": "^2.18.1",
     "nestjs-stripe": "^1.0.0",
+    "nodemailer": "^6.7.2",
     "passport-jwt": "^4.0.0",
     "redis": "^3.1.2",
     "reflect-metadata": "^0.1.13",
@@ -62,6 +65,7 @@
     "@types/ioredis": "^4.28.4",
     "@types/jest": "27.0.2",
     "@types/node": "^16.0.0",
+    "@types/nodemailer": "^6.4.4",
     "@types/passport-jwt": "^3.0.6",
     "@types/redis": "^4.0.11",
     "@types/supertest": "^2.0.11",
