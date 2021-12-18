@@ -19,7 +19,7 @@ export class LinkController {
     async all(@Param('id') id:number){
         return this.linkService.find({
             user:id,
-            relations:['orders']
+            relations:['orders','orders.order_items']
         });
     }
 
