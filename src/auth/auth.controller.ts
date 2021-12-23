@@ -72,7 +72,6 @@ export class AuthController {
         const { id } = await this.jwtService.verifyAsync(cookie);
 
         if (request.path === '/api/admin/user') {
-            console.log('admin');
             const user = await this.userService.findOne({id});
             return user
         } else {
